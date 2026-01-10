@@ -15,6 +15,7 @@ APP.use(bodyParser.json());
 APP.use('/auth', AUTH)
 APP.use('/users', USERS)
 
+// Move into a singleton class
 const establishMongoConnection = (URI) => {
     console.log("Connecting to MongoDB...")
     mongoose.connect(URI, {
