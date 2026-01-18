@@ -28,6 +28,22 @@ function createJWT(user_id, email) {
 	return token;
 }
 
+async function updateJWT(user_id, email) {
+	const token = createJWT(user_id, email);
+	try {
+		await User.findOneAndUpdate(
+			{ _id: foundUser[0]._id },
+			{ $set: { token: token.compact() } }
+		)
+
+		return res.status(200).send({ message: "User logged in.", token: token.compact(), user_id: foundUser[0]._id, user: foundUser[0].user_name })
+	}
+	catch (err) {
+		return res.status(501).send({ message: "Something went wrong." })
+	}
+}
+
+// Registration Authentication
 exports.authRegistrationHandler = async (req, res) => {
 	let { username, password, email } = req.body
 	if (checkUserExists(email)) {
@@ -37,7 +53,6 @@ exports.authRegistrationHandler = async (req, res) => {
 	let user_id = uuid.v4();
 	const token = createJWT(user_id, email);
 	try {
-		// TODO: TRANSIOTION TO SQL(?)
 		const registeredUser = await User.create({
 			_id: user_id,
 			user_name: username,
@@ -53,56 +68,28 @@ exports.authRegistrationHandler = async (req, res) => {
 	}
 }
 
-
+// Login Authentication
 exports.authLoginHandler = async (req, res) => {
 	let { email, password } = req.body
 	try {
-		if (!email.length > 0 || !password.length > 0) {
-			return res.status(403).send({ message: "Must enter valid email and password." })
-		}
-		// TODO: CAN BE DONE IN SANITIZATION
-		email = email.toLowerCase()
 		const foundUser = await User.find({ user_email: email })
 		if (foundUser.length > 0) {
-			// TODO: MOVE TO SEPARATE VALIDATION FUNCTION
-			bcrypt.compare(password, foundUser[0].user_pass, async (err, resultPass) => {
-				if (err) throw err;
-				if (resultPass) {
-					// TODO: MOVE TO VALIDATION FUNCTION
-					const claims = { iss: 'lanceio', sub: foundUser[0]._id }
-					const token = jwt.create(claims, process.env.JWT_SECRET)
-					token.setExpiration(new Date().getTime() + 60 * 60 * 10000)
-					try {
-						const updateUserToken = await User.findOneAndUpdate(
-							{ _id: foundUser[0]._id },
-							{ $set: { token: token.compact() } }
-						)
-						if (updateUserToken) {
-							res.status(200).send({ message: "User logged in.", token: token.compact(), user_id: foundUser[0]._id, user: foundUser[0].user_name })
-						}
-						else {
-							res.status(501).send({ message: "Failed to update user token, try logging in again later." })
-						}
-					}
-					catch (err) {
-						res.status(501).send({ message: "Failed to update user token, try logging in later." })
-					}
-				}
-				else {
-					return res.status(401).send({ message: "Password is incorrect." })
-				}
+			bcrypt.compare(password, foundUser[0].user_pass, async (err) => {
+				if (err) return res.status(503).send({ message: "Invalid credentials." });
+				else { await updateJWT() };
 			})
 		}
 		else {
-			return res.status(403).send({ message: "User not found" })
+			return res.status(503).send({ message: "User not found." })
 		}
 	}
 	catch (err) {
-		res.status(501).send({ message: "Internal server error, please try again later." });
+		console.log(err)
+		return res.status(501).send({ message: "Something went wrong." });
 	}
 }
 
-
+// Logout Handler
 exports.logoutHandler = async (req, res) => {
 	const { email, token } = req.body
 	tokenVerificationWrapper(req, res, async () => {
