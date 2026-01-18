@@ -16,50 +16,37 @@ async function checkUserExists(email) {
 	}
 }
 
-// TODO: MOVE TO CLIENT
 async function encryptPassword(pass) {
 	const salt = await bcrypt.genSalt(2);
 	const hashedPassword = await bcrypt.hash(pass, salt); // Pass the salt  << - ~ - >>	
 	return hashedPassword;
 }
 
-// TODO: Partition this function
+function createJWT(user_id, email) {
+	const claims = { iss: 'LanceIO', sub: user_id, aud: email };
+	const token = jwt.create(claims, process.env.JWT_SECRET).setExpiration(new Date().getTime() + (3600 * 1000));
+	return token;
+}
+
 exports.authRegistrationHandler = async (req, res) => {
 	let { username, password, email } = req.body
-
-	if (username == "" || email == "" || password == "") {
-		return res.status(401).send({ error: "Please fill out all fields." })
-	}
-	if (await checkUserExists) {
+	if (checkUserExists(email)) {
 		return res.status(400).send({ error: "User already exists, please log in with your username and password." })
 	}
+	let encryptedPassword = encryptPassword(password); i
+	let user_id = uuid.v4();
+	const token = createJWT(user_id, email);
 	try {
-		// TODO: THIS CAN BE DONE IN SANITIZATION
-		email = email.toLowerCase()
-		// TODO: MOVE TO CLIENT
-		let encryptedPassword = encryptPassword(password);
-
-		let user_id = uuid.v4();
-		// TODO: Double check JWT implementation and security
-		const claims = { iss: 'lanceio', sub: user_id };
-		const token = jwt.create(claims, process.env.JWT_SECRET);
-		token.setExpiration(new Date().getTime() + 60 * 60 * 1000);
-
-		// TODO: THIS SECTION CAN AND SHOULD BE DIVIDED OFF
-		try {
-			const registeredUser = await User.create({
-				_id: user_id,
-				user_name: username,
-				user_email: email,
-				user_pass: hashedPassword,
-				token: token.compact()
-			});
-			await registeredUser.save();
-			res.status(200).send({ token: token.compact(), message: "User registered!", success: true });
-		}
-		catch (err) {
-			res.status(501).send({ message: "Internal server error. Registration failed, please try again later." });
-		}
+		// TODO: TRANSIOTION TO SQL(?)
+		const registeredUser = await User.create({
+			_id: user_id,
+			user_name: username,
+			user_email: email,
+			user_pass: encryptedPassword,
+			token: token.compact()
+		});
+		await registeredUser.save();
+		res.status(200).send({ token: token.compact(), message: "User registered!", success: true });
 	}
 	catch (err) {
 		return res.status(501).send({ error: "Something went wrong." })
