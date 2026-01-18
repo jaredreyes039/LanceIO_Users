@@ -28,7 +28,7 @@ function createJWT(user_id, email) {
 	return token;
 }
 
-async function updateJWT(user_id, email) {
+async function updateJWT(user_id, email, res) {
 	const token = createJWT(user_id, email);
 	try {
 		await User.findOneAndUpdate(
@@ -39,6 +39,7 @@ async function updateJWT(user_id, email) {
 		return res.status(200).send({ message: "User logged in.", token: token.compact(), user_id: foundUser[0]._id, user: foundUser[0].user_name })
 	}
 	catch (err) {
+		console.log(err)
 		return res.status(501).send({ message: "Something went wrong." })
 	}
 }
@@ -46,12 +47,14 @@ async function updateJWT(user_id, email) {
 // Registration Authentication
 exports.authRegistrationHandler = async (req, res) => {
 	let { username, password, email } = req.body
-	if (checkUserExists(email)) {
-		return res.status(400).send({ error: "User already exists, please log in with your username and password." })
+	console.log(req.body)
+	if (await checkUserExists(email)) {
+		return res.status(501).send({ error: "User already exists, please log in with your username and password." })
 	}
-	let encryptedPassword = encryptPassword(password); i
+	let encryptedPassword = await encryptPassword(password);
 	let user_id = uuid.v4();
 	const token = createJWT(user_id, email);
+	console.log(token)
 	try {
 		const registeredUser = await User.create({
 			_id: user_id,
@@ -61,9 +64,10 @@ exports.authRegistrationHandler = async (req, res) => {
 			token: token.compact()
 		});
 		await registeredUser.save();
-		res.status(200).send({ token: token.compact(), message: "User registered!", success: true });
+		return res.status(200).send({ token: token.compact(), message: "User registered!", success: true });
 	}
 	catch (err) {
+		console.log(err)
 		return res.status(501).send({ error: "Something went wrong." })
 	}
 }
@@ -76,7 +80,7 @@ exports.authLoginHandler = async (req, res) => {
 		if (foundUser.length > 0) {
 			bcrypt.compare(password, foundUser[0].user_pass, async (err) => {
 				if (err) return res.status(503).send({ message: "Invalid credentials." });
-				else { await updateJWT() };
+				else { await updateJWT(foundUser[0]._id, foundUser[0].user_email, res) };
 			})
 		}
 		else {
