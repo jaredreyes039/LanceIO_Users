@@ -1,33 +1,39 @@
-const bcrypt = require('bcrypt');
-const uuid = require('uuid');
-const jwt = require('njwt');
-const { tokenVerificationWrapper } = require("../middleware/auth.middleware");
-const sql = require('../config/database.config.js')
+import * as db from "../db/index.mjs"
 
-// TODO: INTERFACE WITH A LOGGER LIKE MORGAN
-// TODO: INTERFACE WITH PROMETHEUS FOR MONITORING
-// TODO: TRANSITION TO RELATIONAL DB
+async function checkIfUserExists(username, email) {
+	var users = await db.query('SELECT * FROM users WHERE username=$1 OR email=$2', [username, email])
+	if (users.length > 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
-async function encryptPassword(pass) {
+async function encryptPassword(password) {
 	const salt = await bcrypt.genSalt(2);
-	const hashedPassword = await bcrypt.hash(pass, salt); // Pass the salt  << - ~ - >>	
+	const hashedPassword = await bcrypt.hash(password, salt); // Pass the salt  << - ~ - >>	
 	return hashedPassword;
 }
 
-function createJWT(user_id, email) {
-	const claims = { iss: 'LanceIO', sub: user_id, aud: email };
-	const token = jwt.create(claims, process.env.JWT_SECRET).setExpiration(new Date().getTime() + (3600 * 1000));
-	return token;
-}
-
-async function updateJWT(user_id, email, res) {
-	const token = createJWT(user_id, email);
+export async function verifyUser(username, password) {
 	try {
-		return token.compact()
+		var query = await db.query('SELECT * FROM users WHERE username=$1', [username])
+		if (query.rows.length > 0) {
+			var user = query.rows[0]
+			//			bcrypt.compare(password, user.password, () => {
+			//				if (err) throw err;
+			//				if (result === true) {
+			//					return user;
+			//				}
+			//				else {
+			//					return false;
+			//				i}
+			//})
+			return user;
+		}
 	}
 	catch (err) {
-		return res.status(501).send({ message: "Something went wrong." })
+		return false;
 	}
 }
-
-

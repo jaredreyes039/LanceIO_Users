@@ -1,10 +1,17 @@
 const express = require('express')
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const { AUTH } = require('./routes/auth.route');
 const cors = require('cors');
+const passport = require('passport');
+const session = require('express-session');
+const { AUTH } = require('./routes/auth.route.js')
 
 const APP = express()
+APP.use(session({
+	secret: "tempt.turtle.dictator.spectre",
+	resave: false,
+	saveUninitialized: false,
+}));
 const PORT = 5000
 
 dotenv.config();
@@ -30,6 +37,9 @@ const corsOptions = {
 
 APP.use(cors(corsOptions));
 APP.use(bodyParser.json());
+APP.use(passport.initialize());
+APP.use(passport.session());
+
 
 APP.use('/auth', AUTH)
 

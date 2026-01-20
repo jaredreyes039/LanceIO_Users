@@ -1,10 +1,14 @@
-const express = require('express');
-const ROUTER = express.Router();
-const AUTH_CONTROLLER = require('../controllers/auth.controller');
+import { Router } from "express";
+import passport from "passport";
+import "../strategies/localStrategy.mjs";
+
+export const AUTH = Router();
 
 //ROUTER.post('/register', AUTH_CONTROLLER.authRegistrationHandler)
-// TODO: Set up catch and param opts for the login and register route(?)
-//ROUTER.post('/login', AUTH_CONTROLLER.authLoginHandler)
+AUTH.post('/login', passport.authenticate('local'), (req, res) => {
+	console.log(req.body)
+	return res.status(400)
+})
 //ROUTER.post('/logout', AUTH_CONTROLLER.logoutHandler)
 
-exports.AUTH = ROUTER;
+
