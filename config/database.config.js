@@ -6,18 +6,32 @@ import postgres from 'postgres'
 let sql;
 if (process.env.NODE_ENV === "development") {
 	try {
-		sql = postgres("postgres://cooper@127.0.0.1:5432/development_personal", {
-			host: '127.0.0.1',            // Postgres ip address[s] or domain name[s]
-			port: 5432,          // Postgres server port[s]
-			database: 'development_personal',            // Name of database to connect to
-			username: 'cooper',            // Username of database user
+		let startTime = performance.now();
+		sql = postgres(process.env.DB_URI_DEVELOPMENT, {
 			max: 10,
 			connect_timeout: 35,
 			connection: {
-				application_name: 'lance_io_users_service'
+				application_name: 'lanceio_users_service'
 			}
 		})
-		console.log("Postgres listening on Port 5432")
+		console.log(`Postgres connection established in ${(performance.now() - startTime).toPrecision(5)}ms`)
+	}
+	catch (err) {
+		console.log(err);
+	}
+}
+
+if (process.env.NODE_ENV === "production") {
+	try {
+		let startTime = performance.now();
+		sql = postgres(process.env.DB_URI_PRODUCTION, {
+			max: 10,
+			connect_timeout: 35,
+			connection: {
+				application_name: 'lanceio_users_service'
+			}
+		})
+		console.log(`Postgres connection established in ${performance.now() - startTime}ms`);
 	}
 	catch (err) {
 		console.log(err);
