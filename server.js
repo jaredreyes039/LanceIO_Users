@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const { AUTH } = require('./routes/auth.route');
 const cors = require('cors');
-const { USERS } = require('./routes/users.route');
+
 const APP = express()
 const PORT = 5000
 
@@ -32,9 +32,9 @@ APP.use(cors(corsOptions));
 APP.use(bodyParser.json());
 
 APP.use('/auth', AUTH)
-APP.use('/users', USERS)
 
 APP.listen(process.env.PORT || PORT, () => {
+
 	console.log(`User service listening on Port ${PORT}`)
 }
 )

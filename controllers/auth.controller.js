@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const jwt = require('njwt');
 const { tokenVerificationWrapper } = require("../middleware/auth.middleware");
+const sql = require('../config/database.config.js')
 
 // TODO: INTERFACE WITH A LOGGER LIKE MORGAN
 // TODO: INTERFACE WITH PROMETHEUS FOR MONITORING
@@ -28,3 +29,5 @@ async function updateJWT(user_id, email, res) {
 		return res.status(501).send({ message: "Something went wrong." })
 	}
 }
+
+
