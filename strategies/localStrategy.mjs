@@ -1,17 +1,20 @@
 import passport from 'passport';
 import { Strategy } from 'passport-local';
 import * as db from "../db/index.mjs"
+import { decryptPassword, encryptPassword } from '../utils/crypto.util.mjs';
 
-// USER: {id, username, email, password}
 
 export default passport.use(
 	new Strategy(async (username, password, done) => {
 		try {
-			var query = await db.query('SELECT * FROM users WHERE username=$1 AND password=$2', [username, password]);
-			if (query.rows.length === 0) {
+			var query = await db.query('SELECT * FROM users WHERE username=$1', [username]);
+			let users = query.rows
+			if (users === 0) {
 				let err = new Error("Invalid Credentials");
 				done(err, null);
 			};
+			// See crypto.util for info on implementation
+			if (!decryptPassword(password, users[0].password)) done('Invalid credentials', null);
 			done(null, query.rows[0]);
 		}
 		catch (err) {
@@ -28,7 +31,6 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(user, done) {
 	try {
-		console.log("Deserialization")
 		process.nextTick(async function() {
 			var query = await db.query('SELECT * FROM users WHERE id=$1', [user.id])
 			var foundUser = query.rows[0];
@@ -37,7 +39,6 @@ passport.deserializeUser(function(user, done) {
 		});
 	}
 	catch (err) {
-		console.log("error")
 		done(err, null);
 
 	}
