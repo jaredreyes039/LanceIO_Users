@@ -15,6 +15,12 @@ AUTH.get('/status', (req, res) => {
 	return res.sendStatus(401);
 })
 
-//ROUTER.post('/logout', AUTH_CONTROLLER.logoutHandler)
+AUTH.post('/logout', (req, res, next) => {
+	if (!req.user) return res.sendStatus(401);
+	req.logout(function(err) {
+		if (err) return next(err);
+		res.sendStatus(200)
+	})
+})
 
 
