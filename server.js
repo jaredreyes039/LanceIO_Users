@@ -6,6 +6,7 @@ const passport = require('passport');
 const session = require('express-session');
 const { AUTH } = require('./routes/auth.route.js')
 
+// EXPRESS CONFIG
 const APP = express()
 APP.use(session({
 	secret: "tempt.turtle.dictator.spectre",
@@ -14,11 +15,14 @@ APP.use(session({
 }));
 const PORT = 5000
 
+// DOTENV
 dotenv.config();
 
-// Environment-specific origins
+// CORS CONFIG
+// ENV SPECIFIC ORIGINS
 const allowedOrigins = [
 	'http://localhost:3000',  // Development
+	'*'
 ];
 
 const corsOptions = {
@@ -35,14 +39,18 @@ const corsOptions = {
 	allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+// OPTS
 APP.use(cors(corsOptions));
 APP.use(bodyParser.json());
-APP.use(passport.initialize());
-APP.use(passport.session());
 
+APP.use(passport.initialize()); // Init auth
+APP.use(passport.session()); // Init session
+APP.use(passport.authenticate('session')); // Session auth support
 
+// ROUTES
 APP.use('/auth', AUTH)
 
+// SERVER
 APP.listen(process.env.PORT || PORT, () => {
 
 	console.log(`User service listening on Port ${PORT}`)
