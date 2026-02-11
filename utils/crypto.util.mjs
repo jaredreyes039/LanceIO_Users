@@ -7,16 +7,5 @@ export async function encryptPassword(password) {
 }
 
 export async function decryptPassword(password, hashedPassword) {
-	bcrypt.compare(password, hashedPassword, (err, result) => {
-		if (err) {
-			console.log(err)
-			return false;
-		}
-		else if (result) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	})
+	return bcrypt.compare(password, hashedPassword)
 }

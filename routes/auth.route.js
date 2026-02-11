@@ -6,6 +6,8 @@ import { checkIfUserExists } from "../utils/verifyUser.util.mjs";
 import { encryptPassword } from "../utils/crypto.util.mjs";
 
 export const AUTH = Router();
+const LOGIN_SUCCESS_REDIRECT = 'http://localhost:3000/dashboard'
+const INDEX_REDIRECT = 'http://localhost:3000/'
 
 AUTH.post('/register', async (req, res, next) => {
 	let { username, email, password } = req.body;
@@ -21,10 +23,12 @@ AUTH.post('/register', async (req, res, next) => {
 	}
 })
 
+// Starts user session
 AUTH.post('/login', passport.authenticate('local'), (req, res) => {
-	return res.sendStatus(200)
+	return res.status(200)
 })
 
+// Verifies active user session
 AUTH.get('/status', (req, res) => {
 	if (req.user) return res.send(req.user)
 	return res.sendStatus(401);
