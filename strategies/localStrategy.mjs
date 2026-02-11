@@ -9,13 +9,17 @@ export default passport.use(
 		try {
 			var query = await db.query('SELECT * FROM users WHERE username=$1', [username]);
 			let users = query.rows
-			if (users === 0) {
+			if (users.length === 0) {
+				done(null, false);
+
+			}
+			else if (await decryptPassword(password, users[0].password) === false) {
 				let err = new Error("Invalid Credentials");
-				done(err, null);
-			};
-			// See crypto.util for info on implementation
-			if (!decryptPassword(password, users[0].password)) done('Invalid credentials', null);
-			done(null, query.rows[0]);
+				done(null, false)
+			}
+			else {
+				done(null, query.rows[0])
+			}
 		}
 		catch (err) {
 			done(err, null);
@@ -31,6 +35,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(user, done) {
 	try {
+		console.log("Deserialization")
 		process.nextTick(async function() {
 			var query = await db.query('SELECT * FROM users WHERE id=$1', [user.id])
 			var foundUser = query.rows[0];
@@ -39,6 +44,7 @@ passport.deserializeUser(function(user, done) {
 		});
 	}
 	catch (err) {
+		console.log("error")
 		done(err, null);
 
 	}
