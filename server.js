@@ -4,7 +4,9 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
-const { AUTH } = require('./routes/auth.route.js')
+const pgSession = require('connect-pg-simple')(session)
+const { AUTH } = require('./routes/auth.route.js');
+const { pool } = require('./db/index.mjs');
 
 // EXPRESS CONFIG
 const APP = express()
@@ -12,6 +14,16 @@ APP.use(session({
 	secret: "tempt.turtle.dictator.spectre",
 	resave: false,
 	saveUninitialized: false,
+	store: new pgSession({
+		pool: pool,
+		tableName: 'session'
+	}),
+	cookie: {
+		secure: 'auto', // FOR LOCALHOST P2P
+		sameSite: 'lax', // FOR LOCALHOST P2P
+		maxAge: 60000,
+		httpOnly: true
+	}
 }));
 const PORT = 5000
 
@@ -36,7 +48,7 @@ const corsOptions = {
 	},
 	credentials: true,
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization']
+	Headers: ['Content-Type', 'Authorization', 'Set-Cookie']
 };
 
 // OPTS

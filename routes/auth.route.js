@@ -22,9 +22,8 @@ AUTH.post('/register', async (req, res, next) => {
 })
 
 AUTH.post('/login', passport.authenticate('local'), (req, res) => {
-	console.log(req.body)
-	return res.sendStatus(200)
-})
+	return res.sendStatus(200);
+});
 
 AUTH.get('/status', (req, res) => {
 	if (req.user) return res.send(req.user)

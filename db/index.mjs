@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-const pool = new Pool();
+export const pool = new Pool();
 
 export const query = async (text, params) => {
 	const start = performance.now()

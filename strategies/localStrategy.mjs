@@ -10,16 +10,13 @@ export default passport.use(
 			var query = await db.query('SELECT * FROM users WHERE username=$1', [username]);
 			let users = query.rows
 			if (users.length === 0) {
-				done(null, false);
-
+				throw new Error("User not found");
 			}
-			else if (await decryptPassword(password, users[0].password) === false) {
+			if (decryptPassword(password, users[0].password) === false) {
 				let err = new Error("Invalid Credentials");
-				done(null, false)
+				done(err, null)
 			}
-			else {
-				done(null, query.rows[0])
-			}
+			done(null, query.rows[0])
 		}
 		catch (err) {
 			done(err, null);
@@ -29,6 +26,7 @@ export default passport.use(
 
 passport.serializeUser(function(user, done) {
 	process.nextTick(function() {
+		console.log("Serializing")
 		done(null, { id: user.id, username: user.username });
 	});
 });
