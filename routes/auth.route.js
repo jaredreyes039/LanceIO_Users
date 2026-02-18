@@ -25,6 +25,10 @@ AUTH.post('/login', passport.authenticate('local'), (req, res) => {
 	return res.sendStatus(200);
 });
 
+AUTH.post('/login/federation/google', passport.authenticate('google'), (req, res) => {
+	return res.sendStatus(200);
+});
+
 AUTH.get('/status', (req, res) => {
 	if (req.user) return res.send(req.user)
 	return res.sendStatus(401);

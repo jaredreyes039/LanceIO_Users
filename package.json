@@ -21,6 +21,7 @@
     "mysql": "^2.18.1",
     "njwt": "^0.4.0",
     "passport": "^0.7.0",
+    "passport-google-oidc": "^0.1.0",
     "passport-local": "^1.0.0",
     "pg": "^8.17.1",
     "uuid": "^9.0.1"
