@@ -3,8 +3,8 @@ import * as db from "../db/index.mjs"
 import GoogleOidcStrategy from "passport-google-oidc";
 
 export default passport.use(new GoogleOidcStrategy({
-	clientID: "636026188458-rvhj8f4oeltrcvqr4tcmr7qc454077ch.apps.googleusercontent.com",
-	clientSecret: "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",
+	clientID: process.env.GOOGLE_AUTH_CLIENT_ID,
+	clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
 	callbackURL: '/auth/oauth2/redirect/google',
 	scope: ['profile']
 }, async function verify(issuer, profile, cb) {
