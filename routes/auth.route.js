@@ -14,7 +14,7 @@ AUTH.post('/register', async (req, res, next) => {
 	if (await checkIfUserExists(username, email)) return res.sendStatus(401);
 	try {
 		password = await encryptPassword(password)
-		let query = await db.query('INSERT INTO users(username, email, password) VALUES ($1,$2,$3)', [username, email, password])
+		let query = await db.query('INSERT INTO users(username, email, password, id) VALUES ($1,$2,$3,$4)', [username, email, password, crypto.randomUUID()])
 		return res.sendStatus(200)
 	}
 	catch (err) {
@@ -37,7 +37,7 @@ AUTH.get('/status', (req, res) => {
 })
 
 AUTH.get('/oauth2/redirect/google', passport.authenticate('google'), (req, res) => {
-	return res.sendStatus(200)
+	return res.redirect('http://localhost:3000/dashboard')
 })
 
 AUTH.post('/logout', (req, res, next) => {
