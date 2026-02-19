@@ -2,6 +2,7 @@ import { Router } from "express";
 import passport from "passport";
 import * as db from "../db/index.mjs";
 import "../strategies/localStrategy.mjs";
+import "../strategies/googleStrategy.mjs"
 import { checkIfUserExists } from "../utils/verifyUser.util.mjs";
 import { encryptPassword } from "../utils/crypto.util.mjs";
 
@@ -25,13 +26,18 @@ AUTH.post('/login/local', passport.authenticate('local'), (req, res) => {
 	return res.sendStatus(200);
 });
 
-AUTH.post('/login/federation/google', passport.authenticate('google'), (req, res) => {
-	return res.sendStatus(200);
-});
+AUTH.get('/login/federation/google', passport.authenticate('google'), (req, res) => {
+	console.log("call")
+})
 
 AUTH.get('/status', (req, res) => {
+	console.log(req.user)
 	if (req.user) return res.send(req.user)
 	return res.sendStatus(401);
+})
+
+AUTH.get('/oauth2/redirect/google', passport.authenticate('google'), (req, res) => {
+	return res.sendStatus(200)
 })
 
 AUTH.post('/logout', (req, res, next) => {
