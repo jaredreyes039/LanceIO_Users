@@ -14,7 +14,6 @@ export default passport.use(new GoogleOidcStrategy({
 		profile.id
 	])
 	if (matchingUsers.rows.length === 0) {
-
 		let newUserId = crypto.randomUUID()
 		// Add new user if user doesn't already exist
 		let newUser = await db.query('INSERT INTO users (username, id) VALUES ($1, $2 )', [
@@ -36,8 +35,6 @@ export default passport.use(new GoogleOidcStrategy({
 		catch (err) {
 			return cb(err)
 		}
-
-
 	} else {
 		let user = await db.query('SELECT * FROM users WHERE id = $1', [matchingUsers.rows[0].user_id])
 		if (user.rows.length !== 0) {

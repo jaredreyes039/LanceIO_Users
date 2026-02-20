@@ -43,11 +43,11 @@ AUTH.get('/oauth2/redirect/google', passport.authenticate('google'), (req, res) 
 })
 
 // Sign out
-AUTH.post('/logout', (req, res, next) => {
+AUTH.get('/logout', (req, res, next) => {
 	if (!req.user) return res.sendStatus(401);
 	req.logout(function(err) {
 		if (err) return next(err);
-		res.sendStatus(200)
+		return res.sendStatus(200)
 	})
 })
 
