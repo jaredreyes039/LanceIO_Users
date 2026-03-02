@@ -12,7 +12,7 @@ export const AUTH = Router();
 // User (id, username, email, password)
 AUTH.post('/register', async (req, res, next) => {
 	let { username, email, password } = req.body;
-	if (!username, !password, !email) return res.sendStatus(401).send({ message: "Fuck" });
+	if (!username, !password, !email) return res.sendStatus(401);
 	if (await checkIfUserExists(username, email)) return res.sendStatus(401);
 	try {
 		password = await encryptPassword(password)
